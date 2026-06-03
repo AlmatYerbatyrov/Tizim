@@ -355,7 +355,7 @@
         <div class="right-column">
             <div class="card qr-card">
                 <h3 data-kz="QR АРҚЫЛЫ ТІРКЕЛУ" data-ru="РЕГИСТРАЦИЯ ПО QR">QR АРҚЫЛЫ ТІРКЕЛУ</h3>
-                <img src="qr-code.gif" alt="QR Code">
+                <img src="my_qr.png" alt="QR Code">
             </div>
 
             <div class="card participants-card">
@@ -366,20 +366,6 @@
                     <button class="filter-btn" data-kz="Барлығы" data-ru="Все">Барлығы</button>
                 </div>
                 <div class="participants-list" id="pList">
-                    <div class="participant-item">
-                        <div class="participant-icon">✎</div>
-                        <div class="participant-details">
-                            <div class="participant-name">Ибраимбаев Бағдат Бақтыдырович</div>
-                            <div class="participant-info">📍 Алматы облысы <br> 📋 Мұғалім</div>
-                            <div class="participant-date">03.06.2026, 11:23:20</div>
-                        </div>
-                    </div>
-                    <div class="participant-item">
-                        <div class="participant-icon">✎</div>
-                        <div class="participant-details">
-                            <div class="participant-name">Тлеуқабыл Нұрболат</div>
-                            <div class="participant-info">📍 Алматы облысы <br> 📋 Мұғалім</div>
-                            <div class="participant-date">03.06.2026, 11:23:08</div>
                         </div>
                     </div>
                 </div>
@@ -410,7 +396,7 @@
         }
 
         // Форма жіберу логикасы
-        let count = 0; // Бастапқы сан
+        let count = 27; // Бастапқы сан
 
         document.getElementById('regForm').addEventListener('submit', function(e) {
             e.preventDefault();
