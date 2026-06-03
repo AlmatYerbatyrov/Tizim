@@ -3,246 +3,460 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Тіркелу парақшасы</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>Семинарға тіркелу</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
         body {
-            background: linear-gradient(135deg, #5b62d4, #8b5ecf);
+            background: linear-gradient(135deg, #6c7cf5 0%, #9059db 100%);
             min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            color: #333;
         }
-        /* Custom scrollbar for the list */
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 8px;
+
+        /* Тіл ауыстырғыш */
+        .lang-switcher {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+            gap: 10px;
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1); 
+        .lang-btn {
+            background: transparent;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 5px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .lang-btn.active {
+            background: white;
+            color: #6c7cf5;
+            font-weight: 600;
+            border-color: white;
+        }
+
+        /* Негізгі контейнер */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* Карточкалардың ортақ стилі */
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Семинар туралы ақпарат */
+        .seminar-info {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .seminar-info h1 {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .seminar-info p {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        /* Тіркелу формасы */
+        .form-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .form-header h2 {
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+        .form-header p {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            color: #555;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .form-control:focus {
+            border-color: #6c7cf5;
+        }
+        textarea.form-control {
+            resize: vertical;
+            height: 60px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(90deg, #6c7cf5 0%, #9059db 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: opacity 0.3s;
+        }
+        .submit-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Оң жақ баған */
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* QR Карточка */
+        .qr-card {
+            text-align: center;
+        }
+        .qr-card h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .qr-card img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border: 1px solid #eee;
+            padding: 5px;
             border-radius: 10px;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.5); 
-            border-radius: 10px;
+
+        /* Қатысушылар тізімі */
+        .participants-card {
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            max-height: 550px;
+        }
+        .participants-header {
+            background: linear-gradient(135deg, #6c7cf5 0%, #9059db 100%);
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        .participants-header h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .participants-header .count {
+            font-size: 36px;
+            font-weight: bold;
+        }
+        .participants-header .total-text {
+            font-size: 12px;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .filter-btn {
+            background: #7a63d9;
+            color: white;
+            border: none;
+            padding: 5px 20px;
+            border-radius: 15px;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .participants-list {
+            padding: 15px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        .participant-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .participant-item:last-child {
+            border-bottom: none;
+        }
+        .participant-icon {
+            width: 40px;
+            height: 40px;
+            background: #6c7cf5;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: white;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .participant-details {
+            flex: 1;
+        }
+        .participant-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: #333;
+        }
+        .participant-info {
+            font-size: 12px;
+            color: #777;
+            margin-top: 3px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .participant-date {
+            font-size: 11px;
+            color: #aaa;
+            margin-top: 3px;
+        }
+
+        /* Хабарлама (Тост) */
+        .toast {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: bottom 0.4s ease;
+            z-index: 1000;
+        }
+        .toast.show {
+            bottom: 30px;
+        }
+
+        /* Мобильді бейімделу */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body>
 
-    <!-- Жоғарғы панель: Тіл және Сағат -->
-    <div class="flex justify-between items-center text-white mb-6 max-w-6xl mx-auto">
-        <div class="bg-white/20 px-4 py-2 rounded-full backdrop-blur-sm shadow-sm flex items-center gap-2">
-            <i class="fa-regular fa-clock"></i>
-            <span id="live-clock" class="font-medium tracking-wide">Жүктелуде...</span>
-        </div>
-        <div class="bg-white rounded-full flex overflow-hidden text-sm shadow-md">
-            <button class="px-4 py-1.5 bg-gray-100 text-purple-600 font-bold">Қазақша</button>
-            <button class="px-4 py-1.5 text-gray-500 hover:bg-gray-50">Русский</button>
-        </div>
+    <div class="lang-switcher">
+        <button class="lang-btn active" onclick="setLang('kz')">Қазақша</button>
+        <button class="lang-btn" onclick="setLang('ru')">Русский</button>
     </div>
 
-    <!-- Негізгі Контейнер -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-6xl mx-auto">
+    <div class="container">
         
-        <!-- СОЛ ЖАҚ: Тіркелу формасы -->
-        <div class="lg:col-span-5 bg-white rounded-2xl p-8 shadow-xl">
-            <div class="text-center mb-8">
-                <h2 class="text-2xl font-bold text-gray-800 mb-2">Тіркелу</h2>
-                <p class="text-gray-500 text-sm">Қатысу үшін форманы толтырыңыз</p>
+        <div class="card seminar-info">
+            <h1 data-kz="Білім берудегі инновациялар семинары" data-ru="Семинар: Инновации в образовании">Білім берудегі инновациялар семинары</h1>
+            <p><strong data-kz="Өтетін күні мен уақыты:" data-ru="Дата и время:">Өтетін күні мен уақыты:</strong> 15 Қазан 2026, 10:00</p>
+            <p><strong data-kz="Өтетін орны:" data-ru="Место проведения:">Өтетін орны:</strong> Қонаев қаласы №3 орта мектеп</p>
+            <p data-kz="Семинардың қысқаша сипаттамасы: Заманауи білім беру технологиялары мен оқыту әдістерін талқылау." data-ru="Краткое описание: Обсуждение современных образовательных технологий и методов обучения.">Семинардың қысқаша сипаттамасы: Заманауи білім беру технологиялары мен оқыту әдістерін талқылау.</p>
+            <p data-kz="Ұйымдастырушылар: Алматы облысының білім басқармасы" data-ru="Организаторы: Управление образования Алматинской области">Ұйымдастырушылар: Алматы облысының білім басқармасы</p>
+        </div>
+
+        <div class="card form-card">
+            <div class="form-header">
+                <h2 data-kz="Тіркелу" data-ru="Регистрация">Тіркелу</h2>
+                <p data-kz="Қатысу үшін форманы толтырыңыз" data-ru="Заполните форму для участия">Қатысу үшін форманы толтырыңыз</p>
             </div>
-
-            <form id="registrationForm" class="space-y-4">
-                <!-- Аты-жөні -->
-                <div>
-                    <label class="block text-sm text-gray-700 mb-1">Сіздің аты-жөніңіз</label>
-                    <input type="text" id="fullName" required placeholder="Аты-жөніңізді енгізіңіз" 
-                           class="w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition">
+            
+            <form id="regForm">
+                <div class="form-group">
+                    <label data-kz="Тегі, аты, әкесінің аты" data-ru="ФИО">Тегі, аты, әкесінің аты</label>
+                    <input type="text" class="form-control" id="fio" required placeholder="...">
+                </div>
+                
+                <div class="form-group">
+                    <label data-kz="Жұмыс орны (мектеп атауы)" data-ru="Место работы (название школы)">Жұмыс орны (мектеп атауы)</label>
+                    <input type="text" class="form-control" id="school" required placeholder="...">
                 </div>
 
-                <!-- Лауазымы -->
-                <div>
-                    <label class="block text-sm text-gray-700 mb-1">Лауазымыңыз</label>
-                    <select id="position" required class="w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none focus:border-purple-500 text-gray-600 bg-white">
-                        <option value="">Лауазымды таңдаңыз</option>
-                        <option value="Мұғалім">Мұғалім</option>
-                        <option value="Директордың орынбасары">Директордың орынбасары</option>
-                        <option value="Директор">Директор</option>
-                        <option value="Әдіскер">Әдіскер</option>
+                <div class="form-group">
+                    <label data-kz="Лауазымыңыз:" data-ru="Должность:">Лауазымыңыз:</label>
+                    <select class="form-control" id="position" required>
+                        <option value="" disabled selected data-kz="Лауазымды таңдаңыз" data-ru="Выберите должность">Лауазымды таңдаңыз</option>
+                        <option value="Мұғалім" data-kz="Мұғалім" data-ru="Учитель">Мұғалім</option>
+                        <option value="Директор" data-kz="Директор" data-ru="Директор">Директор</option>
+                        <option value="Орынбасар" data-kz="Орынбасар" data-ru="Заместитель">Орынбасар</option>
                     </select>
                 </div>
 
-                <!-- Облыс -->
-                <div>
-                    <label class="block text-sm text-gray-700 mb-1">Облысыңыз</label>
-                    <select id="region" required class="w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none focus:border-purple-500 text-gray-600 bg-white">
-                        <option value="">Тізімнен облысты таңдаңыз...</option>
-                        <option value="Абай облысы">Абай облысы</option>
-                        <option value="Ақмола облысы">Ақмола облысы</option>
-                        <option value="Ақтөбе облысы">Ақтөбе облысы</option>
-                        <option value="Алматы облысы">Алматы облысы</option>
-                        <option value="Жетісу облысы">Жетісу облысы</option>
-                        <option value="Қарағанды облысы">Қарағанды облысы</option>
-                        <!-- Басқа облыстарды осылай қоса бересіз -->
+                <div class="form-group">
+                    <label data-kz="Қала/аудан:" data-ru="Город/район:">Қала/аудан:</label>
+                    <input type="text" class="form-control" id="city" required value="Қонаев қаласы">
+                </div>
+
+                <div class="form-group">
+                    <label data-kz="Телефон нөмірі" data-ru="Номер телефона">Телефон нөмірі</label>
+                    <input type="tel" class="form-control" id="phone" required placeholder="+7 (___) ___-__-__">
+                </div>
+
+                <div class="form-group">
+                    <label data-kz="Электрондық пошта" data-ru="Электронная почта">Электрондық пошта</label>
+                    <input type="email" class="form-control" id="email" required placeholder="example@mail.com">
+                </div>
+
+                <div class="form-group">
+                    <label data-kz="Қатысу форматы" data-ru="Формат участия">Қатысу форматы</label>
+                    <select class="form-control" id="format" required>
+                        <option value="Офлайн" data-kz="Офлайн" data-ru="Офлайн">Офлайн</option>
+                        <option value="Онлайн" data-kz="Онлайн" data-ru="Онлайн">Онлайн</option>
                     </select>
                 </div>
 
-                <!-- Аудан -->
-                <div>
-                    <label class="block text-sm text-gray-700 mb-1">Ауданыңыз/Қалаңыз</label>
-                    <input type="text" id="district" required placeholder="Аудан немесе қала атауы" 
-                           class="w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none focus:border-purple-500">
+                <div class="form-group">
+                    <label data-kz="Қосымша ақпарат енгізуге арналған өріс" data-ru="Дополнительная информация">Қосымша ақпарат енгізуге арналған өріс</label>
+                    <textarea class="form-control" id="extra" placeholder="..."></textarea>
                 </div>
 
-                <!-- Мектеп -->
-                <div>
-                    <label class="block text-sm text-gray-700 mb-1">Мектебіңіз</label>
-                    <input type="text" id="school" required placeholder="Мектеп атауын енгізіңіз" 
-                           class="w-full border border-gray-300 rounded-lg px-4 py-2.5 outline-none focus:border-purple-500">
-                </div>
-
-                <button type="submit" id="submitBtn" class="w-full bg-[#6a5bcd] hover:bg-[#5b4ec4] text-white font-medium py-3 rounded-lg mt-6 transition duration-200">
-                    Тіркелу
-                </button>
-                <p id="statusMsg" class="text-center text-sm mt-2 hidden"></p>
+                <button type="submit" class="submit-btn" data-kz="Тіркелу" data-ru="Зарегистрироваться">Тіркелу</button>
             </form>
         </div>
 
-        <!-- ОҢ ЖАҚ: QR және Тізім -->
-        <div class="lg:col-span-7 flex flex-col gap-6">
-            
-            <!-- QR Блок -->
-            <div class="bg-white rounded-2xl p-6 shadow-xl flex flex-col items-center justify-center h-48">
-                <h3 class="font-bold text-gray-800 mb-4">QR АРҚЫЛЫ ТІРКЕЛУ</h3>
-                <!-- QR кодтың орны. Бұл жерге өз сілтемеңіздің QR суретін қоясыз -->
-                <img src="qr-code.gif">
+        <div class="right-column">
+            <div class="card qr-card">
+                <h3 data-kz="QR АРҚЫЛЫ ТІРКЕЛУ" data-ru="РЕГИСТРАЦИЯ ПО QR">QR АРҚЫЛЫ ТІРКЕЛУ</h3>
+                <img src="qr-code.gif" alt="QR Code">
             </div>
 
-            <!-- Тізім Блок -->
-            <div class="bg-white/10 rounded-2xl p-6 shadow-xl backdrop-blur-md border border-white/20 flex-grow flex flex-col text-white">
-                <div class="text-center mb-6">
-                    <h3 class="text-xl font-bold mb-2">Тіркелген қатысушылар</h3>
-                    <div class="text-4xl font-bold mb-1" id="totalCount">0</div>
-                    <div class="text-xs tracking-wider uppercase opacity-80">Барлығы</div>
+            <div class="card participants-card">
+                <div class="participants-header">
+                    <h3 data-kz="Тіркелген қатысушылар" data-ru="Зарегистрированные участники">Тіркелген қатысушылар</h3>
+                    <div class="count" id="countDisplay">0</div>
+                    <div class="total-text" data-kz="БАРЛЫҒЫ" data-ru="ВСЕГО">БАРЛЫҒЫ</div>
+                    <button class="filter-btn" data-kz="Барлығы" data-ru="Все">Барлығы</button>
                 </div>
-
-                <div class="flex justify-center mb-4">
-                    <button class="bg-[#6a5bcd] px-6 py-1.5 rounded-full text-sm font-medium">Барлығы</button>
-                </div>
-
-                <!-- Тіркелгендер тізімі шығатын жер -->
-                <div id="participantsList" class="bg-white rounded-xl flex-grow overflow-y-auto custom-scrollbar h-64 p-2 space-y-2">
-                    <!-- JS арқылы деректер осында түседі -->
+                <div class="participants-list" id="pList">
+                    <div class="participant-item">
+                        <div class="participant-icon">✎</div>
+                        <div class="participant-details">
+                            <div class="participant-name">Ибраимбаев Бағдат Бақтыдырович</div>
+                            <div class="participant-info">📍 Алматы облысы <br> 📋 Мұғалім</div>
+                            <div class="participant-date">03.06.2026, 11:23:20</div>
+                        </div>
+                    </div>
+                    <div class="participant-item">
+                        <div class="participant-icon">✎</div>
+                        <div class="participant-details">
+                            <div class="participant-name">Тлеуқабыл Нұрболат</div>
+                            <div class="participant-info">📍 Алматы облысы <br> 📋 Мұғалім</div>
+                            <div class="participant-date">03.06.2026, 11:23:08</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Логика -->
+    <div class="toast" id="successToast" data-kz="Сәтті тіркелдіңіз!" data-ru="Успешно зарегистрировано!">Сәтті тіркелдіңіз!</div>
+
     <script>
-        // 1. Уақытты көрсету логикасы
-        function updateClock() {
-            const now = new Date();
-            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
-            document.getElementById('live-clock').textContent = now.toLocaleDateString('kk-KZ', options);
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-
-        // МАҢЫЗДЫ: Гугл скрипт сілтемесін осы жерге қоясыз (2-ҚАДАМНАН АЛҒАН СІЛТЕМЕ)
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbygvY9TG0bbxjQUT0ROg4wsMTUuvxDCkaqqAJ3h2EScotr3RbDPdnjn7t0eIZ37X9tGCg/exec';
-
-        // 2. Форманы жіберу логикасы
-        document.getElementById('registrationForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            const status = document.getElementById('statusMsg');
+        // Тіл ауыстыру логикасы
+        let currentLang = 'kz';
+        
+        function setLang(lang) {
+            currentLang = lang;
             
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Жіберілуде...';
-
-            const data = {
-                name: document.getElementById('fullName').value,
-                position: document.getElementById('position').value,
-                region: document.getElementById('region').value,
-                district: document.getElementById('district').value,
-                school: document.getElementById('school').value,
-                timestamp: new Date().toLocaleString('kk-KZ')
-            };
-
-            // Гугл кестеге жіберу
-            fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors', // Бұл қателік шықпас үшін маңызды
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            }).then(() => {
-                // Сәтті аяқталды
-                btn.disabled = false;
-                btn.innerHTML = 'Тіркелу';
-                document.getElementById('registrationForm').reset();
-                status.textContent = 'Сәтті тіркелдіңіз!';
-                status.className = 'text-center text-sm mt-2 block text-green-600';
-                
-                // Тізімге визуалды түрде бірден қосу
-                addParticipantToList(data);
-                
-                setTimeout(() => status.classList.add('hidden'), 3000);
-            }).catch(error => {
-                btn.disabled = false;
-                btn.innerHTML = 'Тіркелу';
-                status.textContent = 'Қате шықты, қайта көріңіз.';
-                status.className = 'text-center text-sm mt-2 block text-red-600';
+            // Батырмалардың стилін өзгерту
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
             });
-        });
+            event.target.classList.add('active');
 
-        // 3. Тізімді Гугл кестеден оқу функциясы (Бет ашылғанда орындалады)
-        function loadParticipants() {
-            if(GOOGLE_SCRIPT_URL.includes('СІЗДІҢ')) return; // Сілтеме қойылмаған болса тоқтату
-            
-            fetch(GOOGLE_SCRIPT_URL)
-                .then(res => res.json())
-                .then(data => {
-                    const listContainer = document.getElementById('participantsList');
-                    listContainer.innerHTML = ''; // Тазалау
-                    let count = 0;
-                    data.forEach(item => {
-                        if(item.name) {
-                            addParticipantToList(item);
-                            count++;
-                        }
-                    });
-                    document.getElementById('totalCount').textContent = count;
-                });
+            // Мәтіндерді ауыстыру
+            const elements = document.querySelectorAll('[data-kz]');
+            elements.forEach(el => {
+                el.innerText = el.getAttribute(`data-${lang}`);
+            });
         }
 
-        // Тізімге HTML элемент қосу функциясы
-        function addParticipantToList(data) {
-            const listContainer = document.getElementById('participantsList');
-            const currentCount = parseInt(document.getElementById('totalCount').textContent);
+        // Форма жіберу логикасы
+        let count = 0; // Бастапқы сан
+
+        document.getElementById('regForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Мәндерді алу
+            const fio = document.getElementById('fio').value;
+            const city = document.getElementById('city').value;
             
-            const div = document.createElement('div');
-            div.className = 'flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg transition border-b border-gray-100 text-gray-800';
-            div.innerHTML = `
-                <div class="bg-[#6a5bcd] text-white w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <i class="fa-solid fa-user-pen"></i>
-                </div>
-                <div>
-                    <div class="font-semibold text-sm">${data.name}</div>
-                    <div class="text-xs text-blue-600 flex items-center gap-1 mt-0.5">
-                        <i class="fa-solid fa-location-dot"></i> ${data.region}, ${data.district}
+            const positionSelect = document.getElementById('position');
+            const position = positionSelect.options[positionSelect.selectedIndex].text;
+            
+            // Қазіргі уақытты алу
+            const now = new Date();
+            const dateStr = `${String(now.getDate()).padStart(2, '0')}.${String(now.getMonth()+1).padStart(2, '0')}.${now.getFullYear()}, ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+            // Жаңа элемент жасау
+            const newItemHTML = `
+                <div class="participant-item">
+                    <div class="participant-icon">✎</div>
+                    <div class="participant-details">
+                        <div class="participant-name">${fio}</div>
+                        <div class="participant-info">📍 ${city} <br> 📋 ${position}</div>
+                        <div class="participant-date">${dateStr}</div>
                     </div>
-                    <div class="text-xs text-gray-600 flex items-center gap-1 mt-0.5">
-                        <i class="fa-solid fa-school"></i> ${data.school} (${data.position})
-                    </div>
-                    <div class="text-[10px] text-gray-400 mt-1">${data.timestamp}</div>
                 </div>
             `;
-            // Жаңа тіркелгендерді ең жоғарыға қосу
-            listContainer.insertBefore(div, listContainer.firstChild);
-            document.getElementById('totalCount').textContent = currentCount + 1;
-        }
 
-        // Бет ашылғанда тізімді жүктеу
-        window.onload = loadParticipants;
+            // Тізімнің басына қосу
+            const list = document.getElementById('pList');
+            list.insertAdjacentHTML('afterbegin', newItemHTML);
+
+            // Санды жаңарту
+            count++;
+            document.getElementById('countDisplay').innerText = count;
+
+            // Форманы тазарту
+            this.reset();
+
+            // Сәтті хабарлама шығару
+            const toast = document.getElementById('successToast');
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        });
     </script>
 </body>
 </html>
