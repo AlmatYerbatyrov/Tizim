@@ -136,6 +136,12 @@
         .submit-btn:hover {
             opacity: 0.9;
         }
+        /* Уақытша өшіру стилі (жіберілу кезінде) */
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background: #aaa;
+        }
 
         /* Оң жақ баған */
         .right-column {
@@ -366,8 +372,6 @@
                     <button class="filter-btn" data-kz="Барлығы" data-ru="Все">Барлығы</button>
                 </div>
                 <div class="participants-list" id="pList">
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -383,9 +387,9 @@
             currentLang = lang;
             
             // Батырмалардың стилін өзгерту
-            document.querySelectorAll('.lang-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
+            const btns = document.querySelectorAll('.lang-btn');
+            btns.forEach(btn => btn.classList.remove('active'));
+            // Іске қосылған батырманы табу және оған 'active' қосу
             event.target.classList.add('active');
 
             // Мәтіндерді ауыстыру
@@ -395,53 +399,114 @@
             });
         }
 
-        // Форма жіберу логикасы
-        let count = 0; // Бастапқы сан
+        // ТІРКЕЛУ ЛОГИКАСЫ: GOOGLE SHEETS ИНТЕГРАЦИЯСЫМЕН
 
+        // =========================================================================
+        // 1. ӨЗІҢІЗДІҢ GOOGLE APPS SCRIPT URL-ІҢІЗДІ ОСЫ ЖЕРГЕ ҚОЙЫҢЫЗ!
+        // Мысалы: const GAS_URL = 'https://script.google.com/macros/s/AKfycb.../exec';
+        // =========================================================================
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbw2MixIeOwzxZTze7nYuD7AZs-f-9zEc9aDV1BXtxwJaJYKAmOgjEEu9ZOYif2nLodgkw/exec';
+
+        // Санды алу үшін айнымалы (сіз сұрағандай 0-ден басталады)
+        let count = 0; 
+        
         document.getElementById('regForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+            e.preventDefault(); // Форманың әдепкі жіберуін болдырмау
 
-            // Мәндерді алу
+            // Тіркелу батырмасын уақытша өшіру (екі рет басылмауы үшін)
+            const submitBtn = this.querySelector('.submit-btn');
+            const originalBtnText = submitBtn.innerText;
+            submitBtn.disabled = true;
+            submitBtn.innerText = currentLang === 'kz' ? 'Жіберілуде...' : 'Отправка...';
+
+            // Форма мәндерін алу
             const fio = document.getElementById('fio').value;
-            const city = document.getElementById('city').value;
-            
+            const school = document.getElementById('school').value;
             const positionSelect = document.getElementById('position');
             const position = positionSelect.options[positionSelect.selectedIndex].text;
-            
-            // Қазіргі уақытты алу
-            const now = new Date();
-            const dateStr = `${String(now.getDate()).padStart(2, '0')}.${String(now.getMonth()+1).padStart(2, '0')}.${now.getFullYear()}, ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            const city = document.getElementById('city').value;
+            const phone = document.getElementById('phone').value;
+            const email = document.getElementById('email').value;
+            const formatSelect = document.getElementById('format');
+            const format = formatSelect.options[formatSelect.selectedIndex].text;
+            const extra = document.getElementById('extra').value;
 
-            // Жаңа элемент жасау
-            const newItemHTML = `
-                <div class="participant-item">
-                    <div class="participant-icon">✎</div>
-                    <div class="participant-details">
-                        <div class="participant-name">${fio}</div>
-                        <div class="participant-info">📍 ${city} <br> 📋 ${position}</div>
-                        <div class="participant-date">${dateStr}</div>
-                    </div>
-                </div>
-            `;
-
-            // Тізімнің басына қосу
-            const list = document.getElementById('pList');
-            list.insertAdjacentHTML('afterbegin', newItemHTML);
-
-            // Санды жаңарту
+            // Санақты арттыру
             count++;
-            document.getElementById('countDisplay').innerText = count;
 
-            // Форманы тазарту
-            this.reset();
+            // Жіберілетін деректер объектісін жасау (GAS кодындағы data.* атауларына сәйкес болуы керек)
+            const formData = {
+                id: count,
+                fio: fio,
+                school: school,
+                position: position,
+                city: city,
+                phone: phone,
+                email: email,
+                format: format,
+                extra: extra
+            };
 
-            // Сәтті хабарлама шығару
-            const toast = document.getElementById('successToast');
-            toast.classList.add('show');
-            
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+            // Деректерді Google Apps Script-ке JSON форматында жіберу
+            // Google CORS-ты толық қолдамайтындықтан, біз деректерді POST сұранысымен жібереміз,
+            // бірақ 'no-cors' режимін қолданамыз.
+            fetch(GAS_URL, {
+                method: 'POST',
+                mode: 'no-cors', // БҰЛ МАҢЫЗДЫ!
+                body: JSON.stringify(formData),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(() => {
+                // 'no-cors' режимінде біз GAS-тың JSON жауабын оқи алмаймыз,
+                // бірақ егер сұраныс жіберілсе, біз сәтті деп есептейміз.
+
+                // Форманы тазарту
+                this.reset();
+
+                // Сәтті тіркелу хабарламасын көрсету
+                const toast = document.getElementById('successToast');
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3000);
+
+                // Тізімді жаңарту (жергілікті бетте көрсету)
+                const now = new Date();
+                const dateStr = `${String(now.getDate()).padStart(2, '0')}.${String(now.getMonth()+1).padStart(2, '0')}.${now.getFullYear()}, ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+                const newItemHTML = `
+                    <div class="participant-item">
+                        <div class="participant-icon">✎</div>
+                        <div class="participant-details">
+                            <div class="participant-name">${fio}</div>
+                            <div class="participant-info">📍 ${city} <br> 📋 ${position}</div>
+                            <div class="participant-date">${dateStr}</div>
+                        </div>
+                    </div>
+                `;
+                const list = document.getElementById('pList');
+                list.insertAdjacentHTML('afterbegin', newItemHTML);
+                document.getElementById('countDisplay').innerText = count;
+
+                // Тіркелу батырмасын қалпына келтіру
+                submitBtn.disabled = false;
+                submitBtn.innerText = originalBtnText;
+            })
+            .catch(error => {
+                // Кездейсоқ қате жағдайында (мысалы, интернет болмаса)Fetch сұранысында қате шықса ғана орындалады.
+                // no-cors режимінде бұл сирек орындалады. Деректердің Google Sheets-ке түскенін кестеден тексерген дұрыс.
+                console.error('Қателік:', error);
+                
+                // Санақты кері шегеру
+                count--; 
+                
+                submitBtn.disabled = false;
+                submitBtn.innerText = originalBtnText;
+                
+                // Ескерту хабарламасы (қазақ және орыс тілдерінде)
+                const errorMsg = currentLang === 'kz' ? 'Жіберу кезінде қателік кетті немесе деректерді GoogleSheets-тен тексеріңіз!' : 'Ошибка при отправке или проверьте данные в GoogleSheets!';
+                alert(errorMsg);
+            });
         });
     </script>
 </body>
