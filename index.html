@@ -380,7 +380,7 @@
     <div class="toast" id="successToast" data-kz="Сәтті тіркелдіңіз!" data-ru="Успешно зарегистрировано!">Сәтті тіркелдіңіз!</div>
 
     <script>
-        // Тіл ауыстыру логикасы
+        // Тіл ауыстыру логикасы бұрынғыдай
         let currentLang = 'kz';
         
         function setLang(lang) {
@@ -390,13 +390,17 @@
             const btns = document.querySelectorAll('.lang-btn');
             btns.forEach(btn => btn.classList.remove('active'));
             // Іске қосылған батырманы табу және оған 'active' қосу
-            event.target.classList.add('active');
+            const activeBtn = Array.from(btns).find(btn => btn.innerText.includes(lang === 'kz' ? 'Қазақша' : 'Русский'));
+            if (activeBtn) activeBtn.classList.add('active');
 
             // Мәтіндерді ауыстыру
             const elements = document.querySelectorAll('[data-kz]');
             elements.forEach(el => {
                 el.innerText = el.getAttribute(`data-${lang}`);
             });
+            // Тіл ауыстырғанда тізімді жаңа тілде қайта жүктеу (егер қажет болса)
+            // Бұл функция тек кестеден деректерді тартады, тілді ауыстырмайды.
+            loadParticipants();
         }
 
         // ТІРКЕЛУ ЛОГИКАСЫ: GOOGLE SHEETS ИНТЕГРАЦИЯСЫМЕН
@@ -405,10 +409,57 @@
         // 1. ӨЗІҢІЗДІҢ GOOGLE APPS SCRIPT URL-ІҢІЗДІ ОСЫ ЖЕРГЕ ҚОЙЫҢЫЗ!
         // Мысалы: const GAS_URL = 'https://script.google.com/macros/s/AKfycb.../exec';
         // =========================================================================
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycbw2MixIeOwzxZTze7nYuD7AZs-f-9zEc9aDV1BXtxwJaJYKAmOgjEEu9ZOYif2nLodgkw/exec';
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbxoP4V0nEf5hhPQNu0_4SI6dKKSV7bOE2OfAQVCkiSttk0jaCC3AM5QFsWjw9RcxOz05A/exec';
 
-        // Санды алу үшін айнымалы (сіз сұрағандай 0-ден басталады)
-        let count = 0; 
+        // Тіркелген адамдарды Google Sheets-тен жүктеу функциясы
+        function loadParticipants() {
+            // fetch арқылы doGet сұранысын жіберу (GAS веб-қосымшасының 'exec' сілтемесіне)
+            fetch(GAS_URL)
+                .then(response => response.json()) // Жауапты JSON ретінде оқу
+                .then(data => {
+                    const countDisplay = document.getElementById('countDisplay');
+                    const list = document.getElementById('pList');
+                    
+                    // Санауышты жаңарту
+                    countDisplay.innerText = data.length;
+                    
+                    // Тізімді тазарту
+                    list.innerHTML = '';
+                    
+                    // Барлық қатысушыларды тізімге қосу
+                    data.forEach(participant => {
+                        const newItemHTML = `
+                            <div class="participant-item">
+                                <div class="participant-icon">✎</div>
+                                <div class="participant-details">
+                                    <div class="participant-name">${participant.ФИО}</div>
+                                    <div class="participant-info">📍 ${participant.Мектеп} <br> 📋 ${participant.Лауазымы}</div>
+                                    <div class="participant-date">${participant.Уақыт}</div>
+                                </div>
+                            </div>
+                        `;
+                        list.insertAdjacentHTML('afterbegin', newItemHTML);
+                    });
+                })
+                .catch(error => {
+                    console.error('Қателік (loadParticipants):', error);
+                    // Қателік жағдайында санауышты 0 деп қалдыруға немесе ескерту шығаруға болады
+                });
+        }
+
+        // !!! ЖАҢА !!! Бет жүктелгенде автоматты жаңартуды бастау функциясы
+        function startAutoUpdate() {
+            // Деректерді бір рет бірден жүктеу
+            loadParticipants();
+            
+            // !!! ЖАҢА !!! Әр 15 секунд сайын loadParticipants функциясын шақырып тұру
+            // 15000 миллисекунд = 15 секунд. Оны 10000 (10сек) дейін азайтуға болады.
+            // Өте аз (мысалы 1000) жасамауды ұсынамын, Google API шектеулеріне соқтыруы мүмкін.
+            setInterval(loadParticipants, 15000);
+        }
+
+        // !!! ӨЗГЕРТІЛДІ !!! Бет жүктелгенде loadParticipants орнына startAutoUpdate шақырылады
+        document.addEventListener('DOMContentLoaded', startAutoUpdate);
         
         document.getElementById('regForm').addEventListener('submit', function(e) {
             e.preventDefault(); // Форманың әдепкі жіберуін болдырмау
@@ -431,12 +482,8 @@
             const format = formatSelect.options[formatSelect.selectedIndex].text;
             const extra = document.getElementById('extra').value;
 
-            // Санақты арттыру
-            count++;
-
-            // Жіберілетін деректер объектісін жасау (GAS кодындағы data.* атауларына сәйкес болуы керек)
+            // Жіберілетін деректер объектісі
             const formData = {
-                id: count,
                 fio: fio,
                 school: school,
                 position: position,
@@ -448,8 +495,6 @@
             };
 
             // Деректерді Google Apps Script-ке JSON форматында жіберу
-            // Google CORS-ты толық қолдамайтындықтан, біз деректерді POST сұранысымен жібереміз,
-            // бірақ 'no-cors' режимін қолданамыз.
             fetch(GAS_URL, {
                 method: 'POST',
                 mode: 'no-cors', // БҰЛ МАҢЫЗДЫ!
@@ -470,36 +515,16 @@
                 toast.classList.add('show');
                 setTimeout(() => toast.classList.remove('show'), 3000);
 
-                // Тізімді жаңарту (жергілікті бетте көрсету)
-                const now = new Date();
-                const dateStr = `${String(now.getDate()).padStart(2, '0')}.${String(now.getMonth()+1).padStart(2, '0')}.${now.getFullYear()}, ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-
-                const newItemHTML = `
-                    <div class="participant-item">
-                        <div class="participant-icon">✎</div>
-                        <div class="participant-details">
-                            <div class="participant-name">${fio}</div>
-                            <div class="participant-info">📍 ${city} <br> 📋 ${position}</div>
-                            <div class="participant-date">${dateStr}</div>
-                        </div>
-                    </div>
-                `;
-                const list = document.getElementById('pList');
-                list.insertAdjacentHTML('afterbegin', newItemHTML);
-                document.getElementById('countDisplay').innerText = count;
+                // Жергілікті тізімді қолмен жаңартпаймыз. Тіркелгеннен кейін
+                // тізімді бірден Google Sheets-тен қайта жүктейміз, сонда жаңа адам пайда болады.
+                loadParticipants();
 
                 // Тіркелу батырмасын қалпына келтіру
                 submitBtn.disabled = false;
                 submitBtn.innerText = originalBtnText;
             })
             .catch(error => {
-                // Кездейсоқ қате жағдайында (мысалы, интернет болмаса)Fetch сұранысында қате шықса ғана орындалады.
-                // no-cors режимінде бұл сирек орындалады. Деректердің Google Sheets-ке түскенін кестеден тексерген дұрыс.
-                console.error('Қателік:', error);
-                
-                // Санақты кері шегеру
-                count--; 
-                
+                console.error('Қателік (submit):', error);
                 submitBtn.disabled = false;
                 submitBtn.innerText = originalBtnText;
                 
