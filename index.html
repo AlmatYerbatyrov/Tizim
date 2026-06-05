@@ -282,9 +282,7 @@
         }
     </style>
 </head>
-<body>
-
-    <div class="lang-switcher">
+<body oncontextmenu="return false;"> <div class="lang-switcher">
         <button class="lang-btn active" onclick="setLang('kz')">Қазақша</button>
         <button class="lang-btn" onclick="setLang('ru')">Русский</button>
     </div>
@@ -380,6 +378,23 @@
     <div class="toast" id="successToast" data-kz="Сәтті тіркелдіңіз!" data-ru="Успешно зарегистрировано!">Сәтті тіркелдіңіз!</div>
 
     <script>
+        // !!! ЖАҢА !!! Қауіпсіздік: Пернелер комбинациясын бұғаттау
+        document.onkeydown = function(e) {
+            // 1. Ctrl+U (Кодты қарау) - U пернесінің коды 85
+            if (e.ctrlKey && e.keyCode === 85) {
+                return false;
+            }
+            // 2. Ctrl+C (Көшіру) - C пернесінің коды 67
+            if (e.ctrlKey && e.keyCode === 67) {
+                return false;
+            }
+            // 3. Ctrl+V (Қою) - V пернесінің коды 86
+            if (e.ctrlKey && e.keyCode === 86) {
+                return false;
+            }
+            // Тінтуірдің оң жақ батырмасы 'oncontextmenu' арқылы бұғатталған
+        };
+
         // Тіл ауыстыру логикасы бұрынғыдай
         let currentLang = 'kz';
         
@@ -398,8 +413,7 @@
             elements.forEach(el => {
                 el.innerText = el.getAttribute(`data-${lang}`);
             });
-            // Тіл ауыстырғанда тізімді жаңа тілде қайта жүктеу (егер қажет болса)
-            // Бұл функция тек кестеден деректерді тартады, тілді ауыстырмайды.
+            // Тіл ауыстырғанда тізімді жаңа тілде қайта жүктеу
             loadParticipants();
         }
 
@@ -407,13 +421,12 @@
 
         // =========================================================================
         // 1. ӨЗІҢІЗДІҢ GOOGLE APPS SCRIPT URL-ІҢІЗДІ ОСЫ ЖЕРГЕ ҚОЙЫҢЫЗ!
-        // Мысалы: const GAS_URL = 'https://script.google.com/macros/s/AKfycb.../exec';
         // =========================================================================
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxoP4V0nEf5hhPQNu0_4SI6dKKSV7bOE2OfAQVCkiSttk0jaCC3AM5QFsWjw9RcxOz05A/exec';
 
         // Тіркелген адамдарды Google Sheets-тен жүктеу функциясы
         function loadParticipants() {
-            // fetch арқылы doGet сұранысын жіберу (GAS веб-қосымшасының 'exec' сілтемесіне)
+            // fetch арқылы doGet сұранысын жіберу
             fetch(GAS_URL)
                 .then(response => response.json()) // Жауапты JSON ретінде оқу
                 .then(data => {
@@ -443,28 +456,25 @@
                 })
                 .catch(error => {
                     console.error('Қателік (loadParticipants):', error);
-                    // Қателік жағдайында санауышты 0 деп қалдыруға немесе ескерту шығаруға болады
                 });
         }
 
-        // !!! ЖАҢА !!! Бет жүктелгенде автоматты жаңартуды бастау функциясы
+        // Бет жүктелгенде автоматты жаңартуды бастау функциясы
         function startAutoUpdate() {
             // Деректерді бір рет бірден жүктеу
             loadParticipants();
             
-            // !!! ЖАҢА !!! Әр 15 секунд сайын loadParticipants функциясын шақырып тұру
-            // 15000 миллисекунд = 15 секунд. Оны 10000 (10сек) дейін азайтуға болады.
-            // Өте аз (мысалы 1000) жасамауды ұсынамын, Google API шектеулеріне соқтыруы мүмкін.
+            // Әр 15 секунд сайын loadParticipants функциясын шақырып тұру
             setInterval(loadParticipants, 15000);
         }
 
-        // !!! ӨЗГЕРТІЛДІ !!! Бет жүктелгенде loadParticipants орнына startAutoUpdate шақырылады
+        // Бет жүктелгенде автоматты жаңартуды бастау
         document.addEventListener('DOMContentLoaded', startAutoUpdate);
         
         document.getElementById('regForm').addEventListener('submit', function(e) {
             e.preventDefault(); // Форманың әдепкі жіберуін болдырмау
 
-            // Тіркелу батырмасын уақытша өшіру (екі рет басылмауы үшін)
+            // Тіркелу батырмасын уақытша өшіру
             const submitBtn = this.querySelector('.submit-btn');
             const originalBtnText = submitBtn.innerText;
             submitBtn.disabled = true;
@@ -504,9 +514,6 @@
                 }
             })
             .then(() => {
-                // 'no-cors' режимінде біз GAS-тың JSON жауабын оқи алмаймыз,
-                // бірақ егер сұраныс жіберілсе, біз сәтті деп есептейміз.
-
                 // Форманы тазарту
                 this.reset();
 
@@ -515,8 +522,7 @@
                 toast.classList.add('show');
                 setTimeout(() => toast.classList.remove('show'), 3000);
 
-                // Жергілікті тізімді қолмен жаңартпаймыз. Тіркелгеннен кейін
-                // тізімді бірден Google Sheets-тен қайта жүктейміз, сонда жаңа адам пайда болады.
+                // Тізімді бірден Google Sheets-тен қайта жүктейміз
                 loadParticipants();
 
                 // Тіркелу батырмасын қалпына келтіру
