@@ -282,7 +282,8 @@
         }
     </style>
 </head>
-<body oncontextmenu="return false;"> <div class="lang-switcher">
+<body oncontextmenu="return false;"> 
+    <div class="lang-switcher">
         <button class="lang-btn active" onclick="setLang('kz')">Қазақша</button>
         <button class="lang-btn" onclick="setLang('ru')">Русский</button>
     </div>
@@ -325,6 +326,35 @@
                 </div>
 
                 <div class="form-group">
+                    <label data-kz="Облысыңыз:" data-ru="Ваша область:">Облысыңыз:</label>
+                    <select id="region" class="form-control" required>
+                        <option value="" disabled selected data-kz="Тізімнен облысты таңдаңыз..." data-ru="Выберите область из списка...">Тізімнен облысты таңдаңыз...</option>
+                        <option value="Алматы облысы">Алматы облысы</option>
+                        <option value="Алматы қаласы">Алматы қаласы</option>
+                        <option value="Астана қаласы">Астана қаласы</option>
+                        <option value="Шымкент қаласы">Шымкент қаласы</option>
+                        <option value="Түркістан облысы">Түркістан облысы</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label data-kz="Ауданыңыз:" data-ru="Ваш район:">Ауданыңыз:</label>
+                    <select id="district" class="form-control" required>
+                        <option value="" disabled selected data-kz="Тізімнен ауданды таңдаңыз..." data-ru="Выберите район из списка...">Тізімнен ауданды таңдаңыз...</option>
+                        <option value="Ұйғыр ауданы">Ұйғыр ауданы</option>
+			<option value="Алматы">Алматы</option>
+			<option value="Қонаев">Қонаев</option>
+			<option value="Шымкент">Шымкент</option>
+                        <option value="Қарасай ауданы">Қарасай ауданы</option>
+                        <option value="Еңбекшіқазақ ауданы">Еңбекшіқазақ ауданы</option>
+                        <option value="Алатау ауданы">Алатау ауданы</option>
+                        <option value="Жамбыл ауданы">Жамбыл ауданы</option>
+                        <option value="Іле ауданы">Іле ауданы</option>
+                        <option value="Балқаш ауданы">Балқаш ауданы</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
                     <label data-kz="Қала/аудан:" data-ru="Город/район:">Қала/аудан:</label>
                     <input type="text" class="form-control" id="city" required value="Қонаев қаласы">
                 </div>
@@ -360,7 +390,7 @@
             <div class="card qr-card">
                 <h3 data-kz="QR АРҚЫЛЫ ТІРКЕЛУ" data-ru="РЕГИСТРАЦИЯ ПО QR">QR АРҚЫЛЫ ТІРКЕЛУ</h3><h3 data-kz="QR ТЕЛЕГРАМ БОТ" data-ru="QR ТЕЛЕГРАМ БОТ">ТЕЛЕГРАМ БОТҚА QR АРҚЫЛЫ ӨТУ</h3>
                 <img src="my_qr.png" alt="QR Code">
-		<img src="my_qr_telegram.png" alt="QR Code">
+                <img src="my_qr_telegram.png" alt="QR Code">
             </div>
 
             <div class="card participants-card">
@@ -379,68 +409,44 @@
     <div class="toast" id="successToast" data-kz="Сәтті тіркелдіңіз!" data-ru="Успешно зарегистрировано!">Сәтті тіркелдіңіз!</div>
 
     <script>
-        // !!! ЖАҢА !!! Қауіпсіздік: Пернелер комбинациясын бұғаттау
+        // Пернелер комбинациясын бұғаттау
         document.onkeydown = function(e) {
-            // 1. Ctrl+U (Кодты қарау) - U пернесінің коды 85
-            if (e.ctrlKey && e.keyCode === 85) {
-                return false;
-            }
-            // 2. Ctrl+C (Көшіру) - C пернесінің коды 67
-            if (e.ctrlKey && e.keyCode === 67) {
-                return false;
-            }
-            // 3. Ctrl+V (Қою) - V пернесінің коды 86
-            if (e.ctrlKey && e.keyCode === 86) {
-                return false;
-            }
-            // Тінтуірдің оң жақ батырмасы 'oncontextmenu' арқылы бұғатталған
+            if (e.ctrlKey && e.keyCode === 85) return false;
+            if (e.ctrlKey && e.keyCode === 67) return false;
+            if (e.ctrlKey && e.keyCode === 86) return false;
         };
 
-        // Тіл ауыстыру логикасы бұрынғыдай
         let currentLang = 'kz';
         
         function setLang(lang) {
             currentLang = lang;
             
-            // Батырмалардың стилін өзгерту
             const btns = document.querySelectorAll('.lang-btn');
             btns.forEach(btn => btn.classList.remove('active'));
-            // Іске қосылған батырманы табу және оған 'active' қосу
+            
             const activeBtn = Array.from(btns).find(btn => btn.innerText.includes(lang === 'kz' ? 'Қазақша' : 'Русский'));
             if (activeBtn) activeBtn.classList.add('active');
 
-            // Мәтіндерді ауыстыру
             const elements = document.querySelectorAll('[data-kz]');
             elements.forEach(el => {
                 el.innerText = el.getAttribute(`data-${lang}`);
             });
-            // Тіл ауыстырғанда тізімді жаңа тілде қайта жүктеу
             loadParticipants();
         }
 
-        // ТІРКЕЛУ ЛОГИКАСЫ: GOOGLE SHEETS ИНТЕГРАЦИЯСЫМЕН
-
-        // =========================================================================
-        // 1. ӨЗІҢІЗДІҢ GOOGLE APPS SCRIPT URL-ІҢІЗДІ ОСЫ ЖЕРГЕ ҚОЙЫҢЫЗ!
-        // =========================================================================
+        // GOOGLE APPS SCRIPT URL
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbxoP4V0nEf5hhPQNu0_4SI6dKKSV7bOE2OfAQVCkiSttk0jaCC3AM5QFsWjw9RcxOz05A/exec';
 
-        // Тіркелген адамдарды Google Sheets-тен жүктеу функциясы
         function loadParticipants() {
-            // fetch арқылы doGet сұранысын жіберу
             fetch(GAS_URL)
-                .then(response => response.json()) // Жауапты JSON ретінде оқу
+                .then(response => response.json())
                 .then(data => {
                     const countDisplay = document.getElementById('countDisplay');
                     const list = document.getElementById('pList');
                     
-                    // Санауышты жаңарту
                     countDisplay.innerText = data.length;
-                    
-                    // Тізімді тазарту
                     list.innerHTML = '';
                     
-                    // Барлық қатысушыларды тізімге қосу
                     data.forEach(participant => {
                         const newItemHTML = `
                             <div class="participant-item">
@@ -460,22 +466,16 @@
                 });
         }
 
-        // Бет жүктелгенде автоматты жаңартуды бастау функциясы
         function startAutoUpdate() {
-            // Деректерді бір рет бірден жүктеу
             loadParticipants();
-            
-            // Әр 15 секунд сайын loadParticipants функциясын шақырып тұру
             setInterval(loadParticipants, 15000);
         }
 
-        // Бет жүктелгенде автоматты жаңартуды бастау
         document.addEventListener('DOMContentLoaded', startAutoUpdate);
         
         document.getElementById('regForm').addEventListener('submit', function(e) {
-            e.preventDefault(); // Форманың әдепкі жіберуін болдырмау
+            e.preventDefault();
 
-            // Тіркелу батырмасын уақытша өшіру
             const submitBtn = this.querySelector('.submit-btn');
             const originalBtnText = submitBtn.innerText;
             submitBtn.disabled = true;
@@ -484,20 +484,32 @@
             // Форма мәндерін алу
             const fio = document.getElementById('fio').value;
             const school = document.getElementById('school').value;
+            
             const positionSelect = document.getElementById('position');
             const position = positionSelect.options[positionSelect.selectedIndex].text;
+            
+            // ЖАҢА: Облыс пен Ауданды селекттен оқу
+            const regionSelect = document.getElementById('region');
+            const region = regionSelect.options[regionSelect.selectedIndex].text;
+            
+            const districtSelect = document.getElementById('district');
+            const district = districtSelect.options[districtSelect.selectedIndex].text;
+
             const city = document.getElementById('city').value;
             const phone = document.getElementById('phone').value;
             const email = document.getElementById('email').value;
+            
             const formatSelect = document.getElementById('format');
             const format = formatSelect.options[formatSelect.selectedIndex].text;
             const extra = document.getElementById('extra').value;
 
-            // Жіберілетін деректер объектісі
+            // Жіберілетін деректер (Жаңа өрістер қосылды)
             const formData = {
                 fio: fio,
                 school: school,
                 position: position,
+                region: region,      // <--- Google Sheets-ке жіберіледі
+                district: district,  // <--- Google Sheets-ке жіберіледі
                 city: city,
                 phone: phone,
                 email: email,
@@ -505,28 +517,22 @@
                 extra: extra
             };
 
-            // Деректерді Google Apps Script-ке JSON форматында жіберу
             fetch(GAS_URL, {
                 method: 'POST',
-                mode: 'no-cors', // БҰЛ МАҢЫЗДЫ!
+                mode: 'no-cors',
                 body: JSON.stringify(formData),
                 headers: {
                     'Content-Type': 'application/json'
                 }
             })
             .then(() => {
-                // Форманы тазарту
                 this.reset();
-
-                // Сәтті тіркелу хабарламасын көрсету
                 const toast = document.getElementById('successToast');
                 toast.classList.add('show');
                 setTimeout(() => toast.classList.remove('show'), 3000);
 
-                // Тізімді бірден Google Sheets-тен қайта жүктейміз
                 loadParticipants();
 
-                // Тіркелу батырмасын қалпына келтіру
                 submitBtn.disabled = false;
                 submitBtn.innerText = originalBtnText;
             })
@@ -535,7 +541,6 @@
                 submitBtn.disabled = false;
                 submitBtn.innerText = originalBtnText;
                 
-                // Ескерту хабарламасы (қазақ және орыс тілдерінде)
                 const errorMsg = currentLang === 'kz' ? 'Жіберу кезінде қателік кетті немесе деректерді GoogleSheets-тен тексеріңіз!' : 'Ошибка при отправке или проверьте данные в GoogleSheets!';
                 alert(errorMsg);
             });
